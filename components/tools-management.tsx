@@ -211,10 +211,11 @@ export function ManageToolsDialog({
               chats.map((chat) => (
                 <div
                   key={chat.id}
-                  className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors"
+                  className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer"
+                  onClick={() => !editingChat && handleOpenChat(chat)}
                 >
                   {editingChat?.id === chat.id ? (
-                    <div className="flex-1 flex items-center gap-2">
+                    <div className="flex-1 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                       <Input
                         value={editName}
                         onChange={(e) => setEditName(e.target.value)}
@@ -249,14 +250,6 @@ export function ManageToolsDialog({
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <h4 className="font-medium">{getChatTitle(chat)}</h4>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 px-2"
-                            onClick={() => handleOpenChat(chat)}
-                          >
-                            <ExternalLink className="h-3 w-3" />
-                          </Button>
                         </div>
                         <p className="text-xs text-muted-foreground">
                           {getProjectName(chat.project_id)}
@@ -270,7 +263,7 @@ export function ManageToolsDialog({
                         </p>
                       </div>
                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                           <Button
                             variant="ghost"
                             size="sm"
@@ -281,7 +274,8 @@ export function ManageToolsDialog({
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation()
                               setEditingChat(chat)
                               setEditName(getChatTitle(chat))
                             }}
@@ -290,7 +284,10 @@ export function ManageToolsDialog({
                             Rename
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            onClick={() => setDeletingChat(chat)}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setDeletingChat(chat)
+                            }}
                             className="text-destructive"
                           >
                             <Trash2 className="h-4 w-4 mr-2" />

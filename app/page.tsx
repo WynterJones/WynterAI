@@ -10,6 +10,7 @@ import { TemplatesSlider } from '../components/templates-slider'
 import { CreditsDropdown } from '../components/credits-dropdown'
 import { UserMenuDropdown } from '../components/user-menu-dropdown'
 import { TemplatesLibrary } from '../components/templates-library'
+import { ManageToolsDialog } from '../components/tools-management'
 import { useApiValidation } from '../lib/hooks/useApiValidation'
 import { useAuth } from '../lib/hooks/useAuth'
 import { AuthDialog } from '../components/auth'
@@ -39,6 +40,7 @@ export default function HomePage() {
   )
   const [showVideoDialog, setShowVideoDialog] = useState(false)
   const [showTemplatesLibrary, setShowTemplatesLibrary] = useState(false)
+  const [showMyTools, setShowMyTools] = useState(false)
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null)
 
   // API validation on page load
@@ -322,27 +324,37 @@ export default function HomePage() {
             selectedTemplateId={selectedTemplate?.id}
           />
 
-          {/* Browse Library Button */}
-          <div className="text-center mt-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowTemplatesLibrary(true)}
-            >
-              Browse Library
-            </Button>
-          </div>
-
           {/* Welcome Message */}
-          <div className="text-center">
+          <div className="text-center mt-8">
             <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-4 text-pretty">
               Build an Embeddable Tool
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto text-pretty">
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto text-pretty mb-6">
               Describe any tools, build it and add to your site, works in
               ClickFunnels, Shopify, GHL, anywhere. Select a pre-made template
               or start from scratch and add value to your offer.
             </p>
+
+            {/* Buttons */}
+            <div className="flex gap-3 justify-center mb-6">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => setShowTemplatesLibrary(true)}
+              >
+                Browse Library
+              </Button>
+              {user && (
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => setShowMyTools(true)}
+                >
+                  My Created Tools
+                </Button>
+              )}
+            </div>
+
             {!user && !authLoading && (
               <div className="flex gap-3 mt-6 justify-center">
                 <Button
@@ -436,6 +448,11 @@ export default function HomePage() {
           }
         }}
         selectedTemplateId={selectedTemplate?.id}
+      />
+
+      <ManageToolsDialog
+        open={showMyTools}
+        onOpenChange={setShowMyTools}
       />
     </div>
   )

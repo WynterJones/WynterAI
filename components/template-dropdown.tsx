@@ -104,16 +104,24 @@ export function TemplateDropdown({
         {selectedTemplate ? selectedTemplate.name : 'Selected Template'}
       </span>
       {selectedTemplate && (
-        <button
-          type="button"
+        <span
           onClick={(e) => {
             e.stopPropagation()
             handleTemplateSelect(null)
           }}
-          className="ml-1 hover:bg-muted rounded p-0.5"
+          className="ml-1 hover:bg-muted rounded p-0.5 cursor-pointer inline-flex items-center"
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.stopPropagation()
+              e.preventDefault()
+              handleTemplateSelect(null)
+            }
+          }}
         >
           <XIcon className="h-3 w-3" />
-        </button>
+        </span>
       )}
       <ChevronDownIcon className="h-4 w-4 text-gray-600 dark:text-white flex-shrink-0" />
     </Button>

@@ -75,7 +75,7 @@ export function TemplatesLibrary({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden p-0">
+      <DialogContent className="max-w-full max-h-full w-screen h-screen overflow-hidden p-0 m-0 flex flex-col">
         <DialogHeader className="px-6 pt-6 pb-4 border-b">
           <DialogTitle>Template Library</DialogTitle>
           <DialogDescription>
@@ -105,7 +105,7 @@ export function TemplatesLibrary({
         </div>
 
         {/* Templates Grid */}
-        <div className="px-6 py-4 overflow-y-auto max-h-[calc(90vh-200px)]">
+        <div className="px-6 py-4 overflow-y-auto flex-1">
           {loading ? (
             <div className="text-center py-12 text-muted-foreground">
               Loading templates...
@@ -147,28 +147,43 @@ export function TemplatesLibrary({
                     <h3 className="font-semibold text-base mb-1 line-clamp-1">
                       {template.name}
                     </h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2">
+                    <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
                       {template.description}
                     </p>
 
-                    {/* Use Template Button */}
-                    <Button
-                      className="w-full mt-3"
-                      size="sm"
-                      variant={
-                        selectedTemplateId === template.id
-                          ? "default"
-                          : "outline"
-                      }
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleSelectTemplate(template)
-                      }}
-                    >
-                      {selectedTemplateId === template.id
-                        ? "Selected"
-                        : "Use Template"}
-                    </Button>
+                    {/* Action Buttons */}
+                    <div className="flex gap-2">
+                      {template.preview_url && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            window.open(template.preview_url, '_blank')
+                          }}
+                        >
+                          Preview
+                        </Button>
+                      )}
+                      <Button
+                        className="flex-1"
+                        size="sm"
+                        variant={
+                          selectedTemplateId === template.id
+                            ? "default"
+                            : "outline"
+                        }
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleSelectTemplate(template)
+                        }}
+                      >
+                        {selectedTemplateId === template.id
+                          ? "Selected"
+                          : "Use Template"}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}

@@ -11,7 +11,7 @@ export interface Settings {
 const DEFAULT_SETTINGS: Settings = {
   model: 'v0-1.5-md',
   imageGenerations: false,
-  thinking: false,
+  thinking: true,
 }
 
 export function useSettings() {

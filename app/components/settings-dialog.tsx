@@ -195,34 +195,8 @@ export default function SettingsDialog({ trigger }: SettingsDialogProps) {
             />
           </div>
 
-          {/* Thinking */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <h3 className="text-sm font-medium">Thinking</h3>
-              <p className="text-xs text-muted-foreground">
-                Show AI reasoning process during generation
-              </p>
-            </div>
-            <Switch
-              checked={tempSettings.thinking}
-              onCheckedChange={(checked) =>
-                setTempSettings({
-                  ...tempSettings,
-                  thinking: checked,
-                })
-              }
-            />
-          </div>
-
           {/* API Tokens Section */}
           <div className="border-t pt-6 space-y-4">
-            <div>
-              <h3 className="text-sm font-medium mb-1">API Tokens</h3>
-              <p className="text-xs text-muted-foreground">
-                Update your API keys (leave blank to keep existing)
-              </p>
-            </div>
-
             {/* Vercel Token */}
             <div className="space-y-2">
               <Label htmlFor="vercel-token" className="text-sm">

@@ -84,27 +84,34 @@ export async function POST(request: NextRequest) {
     } else {
       // Create a project if none specified
       if (!dbProjectId) {
-        const newProjectId = `proj_${Date.now()}_${Math.random().toString(36).substring(7)}`
+        // Create project in v0 first
+        const v0Project = await v0.projects.create({
+          name: 'New Project',
+          description: message.substring(0, 100),
+        })
 
+        // Create project in database
         const { data: newProject } = await supabase
           .from('projects')
           .insert({
-            id: newProjectId,
+            id: v0Project.id,
             user_id: user.id,
             title: 'New Project',
             description: message.substring(0, 100),
+            v0_project_id: v0Project.id,
           })
           .select()
           .single()
 
-        dbProjectId = newProject?.id || newProjectId
+        dbProjectId = newProject?.id || v0Project.id
       }
 
-      // Create new chat
+      // Create new chat with projectId
       response = (await v0.chats.create({
         system:
           'v0 MUST always generate code even if the user just says "hi" or asks a question. v0 MUST NOT ask the user to clarify their request.',
         message: message.trim(),
+        projectId: dbProjectId,
         modelConfiguration: {
           modelId: modelId,
           imageGenerations: imageGenerations,

@@ -22,8 +22,7 @@ import {
   CreateProjectDialog,
   ManageProjectsDialog,
 } from '@/components/project-management'
-import { ManageToolsDialog } from '@/components/tools-management'
-import { Plus, Settings2, Wrench } from 'lucide-react'
+import { Plus, Settings2 } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -187,7 +186,6 @@ export default function PromptComponent({
   const [isOverPrompt, setIsOverPrompt] = useState(false)
   const [showCreateProject, setShowCreateProject] = useState(false)
   const [showManageProjects, setShowManageProjects] = useState(false)
-  const [showManageTools, setShowManageTools] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const recognitionRef = useRef<any>(null)
 
@@ -818,17 +816,6 @@ export default function PromptComponent({
                                 onChatChange={onChatChange}
                               />
                             )}
-
-                            {/* Button to manage all tools */}
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0"
-                              onClick={() => setShowManageTools(true)}
-                              title="Manage Tools"
-                            >
-                              <Wrench className="h-4 w-4" />
-                            </Button>
                           </>
                         ) : null}
                       </div>
@@ -1032,11 +1019,6 @@ export default function PromptComponent({
           // Reload projects list
           router.refresh()
         }}
-      />
-
-      <ManageToolsDialog
-        open={showManageTools}
-        onOpenChange={setShowManageTools}
       />
     </>
   )

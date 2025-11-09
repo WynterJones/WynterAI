@@ -73,17 +73,21 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Generate a unique project ID
-    const projectId = `proj_${Date.now()}_${Math.random().toString(36).substring(7)}`
+    // Create project in v0 first
+    const v0Project = await v0.projects.create({
+      name: projectTitle.trim(),
+      description: description || undefined,
+    })
 
-    // Create project in Supabase
+    // Create project in Supabase with the v0 project ID
     const { data: project, error: createError } = await supabase
       .from('projects')
       .insert({
-        id: projectId,
+        id: v0Project.id,
         user_id: user.id,
         title: projectTitle.trim(),
         description: description || null,
+        v0_project_id: v0Project.id,
       })
       .select()
       .single()

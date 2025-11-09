@@ -78,8 +78,8 @@ export function CreateProjectDialog({
           onProjectCreated(newProject)
         }
 
-        // Navigate to the new project
-        router.push(`/projects/${newProject.id}`)
+        // Navigate to the new project with a new chat
+        router.push(`/projects/${newProject.id}/chats/new`)
       } else {
         console.error("Failed to create project")
       }

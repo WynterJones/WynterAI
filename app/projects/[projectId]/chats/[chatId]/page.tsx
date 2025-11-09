@@ -451,7 +451,7 @@ export default function ChatPage() {
   return (
     <div className="relative min-h-dvh bg-background flex flex-col">
       {/* Header with Logo and User Menu */}
-      <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="border-b bg-white">
         <div className="container mx-auto flex h-16 items-center justify-between py-0.5 px-4 max-w-7xl">
           <Link href="/">
             <Image
