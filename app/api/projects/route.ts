@@ -61,11 +61,14 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { title, description } = body
+    const { name, title, description } = body
 
-    if (!title || typeof title !== 'string' || !title.trim()) {
+    // Support both 'name' and 'title' for flexibility
+    const projectTitle = name || title
+
+    if (!projectTitle || typeof projectTitle !== 'string' || !projectTitle.trim()) {
       return NextResponse.json(
-        { error: 'Project title is required' },
+        { error: 'Project name is required' },
         { status: 400 },
       )
     }
@@ -79,7 +82,7 @@ export async function POST(request: NextRequest) {
       .insert({
         id: projectId,
         user_id: user.id,
-        title: title.trim(),
+        title: projectTitle.trim(),
         description: description || null,
       })
       .select()

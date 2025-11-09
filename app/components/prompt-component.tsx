@@ -17,6 +17,13 @@ import {
   ProjectDropdown,
   ChatDropdown,
 } from '../projects/[projectId]/chats/[chatId]/components'
+import { TemplateDropdown } from '@/components/template-dropdown'
+import {
+  CreateProjectDialog,
+  ManageProjectsDialog,
+} from '@/components/project-management'
+import { ManageToolsDialog } from '@/components/tools-management'
+import { Plus, Settings2, Wrench } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -128,6 +135,10 @@ interface PromptComponentProps {
 
   // Is user logged in?
   isAuthenticated?: boolean
+
+  // Selected template
+  selectedTemplate?: any | null
+  onTemplateChange?: (template: any | null) => void
 }
 
 export default function PromptComponent({
@@ -149,6 +160,8 @@ export default function PromptComponent({
   onRenameChat,
   onPromptClick,
   isAuthenticated = true,
+  selectedTemplate,
+  onTemplateChange,
 }: PromptComponentProps) {
   const router = useRouter()
   const { settings } = useSettings()
@@ -172,6 +185,9 @@ export default function PromptComponent({
   })
   const [isDragging, setIsDragging] = useState(false)
   const [isOverPrompt, setIsOverPrompt] = useState(false)
+  const [showCreateProject, setShowCreateProject] = useState(false)
+  const [showManageProjects, setShowManageProjects] = useState(false)
+  const [showManageTools, setShowManageTools] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const recognitionRef = useRef<any>(null)
 
@@ -316,11 +332,10 @@ export default function PromptComponent({
           setIsOverPrompt(false)
         }
 
-        if (isPromptExpanded) {
-          // If prompt is expanded, collapse it
-          setIsPromptExpanded(false)
-        }
-        // Remove navigation behavior - just handle prompt collapse
+        // Disabled: Don't collapse prompt on ESC
+        // if (isPromptExpanded) {
+        //   setIsPromptExpanded(false)
+        // }
         return
       }
 
@@ -519,25 +534,6 @@ export default function PromptComponent({
 
   return (
     <>
-      {/* Floating v0 Button */}
-      {!isPromptExpanded && (
-        <div className="fixed bottom-6 right-6 z-50 animate-fade-in">
-          <button
-            onClick={() => {
-              setShouldAnimate(true)
-              setIsPromptExpanded(true)
-            }}
-            className="text-foreground bg-background border border-border w-14 h-14 rounded-full shadow-lg transition-all duration-200 cursor-pointer hover:opacity-80 flex items-center justify-center"
-          >
-            {isLoading ? (
-              <div className="animate-spin rounded-full h-6 w-6 border-2 border-foreground border-t-transparent"></div>
-            ) : (
-              <V0Logo size={24} className="text-foreground" />
-            )}
-          </button>
-        </div>
-      )}
-
       {/* Full-screen drag overlay */}
       {isDragging && (
         <div
@@ -776,9 +772,15 @@ export default function PromptComponent({
                   {/* Controls under input */}
                   <div className="mt-2 sm:mt-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
                     <div className="flex items-center justify-between sm:flex-1">
-                      <div className="flex items-center gap-0 flex-1 max-w-[300px] sm:max-w-[400px]">
-                        {/* Project and Chat Dropdowns */}
-                        {showDropdowns && currentProjectId ? (
+                      <div className="flex items-center gap-1 flex-1 max-w-[400px] sm:max-w-[550px]">
+                        {/* Template Dropdown */}
+                        <TemplateDropdown
+                          selectedTemplate={selectedTemplate}
+                          onTemplateChange={onTemplateChange}
+                        />
+
+                        {/* Project Dropdown with Plus and Menu buttons */}
+                        {showDropdowns ? (
                           <>
                             <ProjectDropdown
                               currentProjectId={currentProjectId}
@@ -786,60 +788,79 @@ export default function PromptComponent({
                               projects={projects}
                               onProjectChange={onProjectChange}
                             />
-                            <ChatDropdown
-                              projectId={currentProjectId}
-                              currentChatId={currentChatId || 'new'}
-                              chats={projectChats}
-                              onChatChange={onChatChange}
-                            />
+                            {/* Plus button to create new project */}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0"
+                              onClick={() => setShowCreateProject(true)}
+                              title="Create New Project"
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                            {/* Menu button to manage projects */}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0"
+                              onClick={() => setShowManageProjects(true)}
+                              title="Manage Projects"
+                            >
+                              <Settings2 className="h-4 w-4" />
+                            </Button>
+
+                            {/* Chat Dropdown - only show if project selected */}
+                            {currentProjectId && currentProjectId !== 'new' && (
+                              <ChatDropdown
+                                projectId={currentProjectId}
+                                currentChatId={currentChatId || 'new'}
+                                chats={projectChats}
+                                onChatChange={onChatChange}
+                              />
+                            )}
+
+                            {/* Button to manage all tools */}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0"
+                              onClick={() => setShowManageTools(true)}
+                              title="Manage Tools"
+                            >
+                              <Wrench className="h-4 w-4" />
+                            </Button>
                           </>
-                        ) : currentProjectId &&
-                          (projects.length === 0 ||
-                            projectChats.length === 0) ? (
-                          // Show skeleton loading states when dropdowns should be shown but data is loading
-                          <div className="flex items-center gap-2">
-                            <Skeleton className="h-8 w-32" />
-                            <Skeleton className="h-8 w-24" />
-                          </div>
-                        ) : currentProjectId ? (
-                          // Placeholder to prevent layout shift when dropdowns are hidden
-                          <div className="flex gap-0">
-                            <div className="h-8 w-24 bg-transparent"></div>
-                            <div className="h-8 w-20 bg-transparent"></div>
-                          </div>
                         ) : null}
                       </div>
 
                       <div className="flex items-center gap-3">
                         {/* Button group with spacing */}
                         <div className="flex items-center gap-2">
-                          {/* Single More Options Menu - Always show */}
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0 ml-2 sm:ml-0"
-                              >
-                                <MoreVerticalIcon className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" side="top">
-                              {/* Settings - Always available */}
-                              <SettingsDialog />
+                          {/* Settings - Always available as standalone button */}
+                          <SettingsDialog />
 
-                              {/* Deploy - Only show when we have project context, chat is loaded, and there's a completed version */}
-                              {showDropdowns &&
-                                currentProjectId &&
-                                currentChatId &&
-                                currentChatId !== 'new' &&
-                                chatData &&
-                                chatData.latestVersion &&
-                                chatData.latestVersion.status ===
-                                  'completed' && (
-                                  <>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem
+                          {/* More Options Menu - Only show when there are conditional items */}
+                          {showDropdowns &&
+                            currentProjectId &&
+                            currentChatId &&
+                            currentChatId !== 'new' &&
+                            chatData && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 w-8 p-0 ml-2 sm:ml-0"
+                                  >
+                                    <MoreVerticalIcon className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" side="top">
+                                  {/* Deploy - Only show when we have project context, chat is loaded, and there's a completed version */}
+                                  {chatData.latestVersion &&
+                                    chatData.latestVersion.status ===
+                                      'completed' && (
+                                      <DropdownMenuItem
                                       onClick={async () => {
                                         try {
                                           const response = await fetch(
@@ -902,19 +923,13 @@ export default function PromptComponent({
                                       </svg>
                                       Deploy
                                     </DropdownMenuItem>
-                                  </>
-                                )}
+                                  )}
 
-                              {/* Rename Chat - Only show when we have project context and chat is loaded */}
-                              {showDropdowns &&
-                                currentProjectId &&
-                                currentChatId &&
-                                currentChatId !== 'new' &&
-                                onRenameChat &&
-                                chatData && (
-                                  <>
-                                    <DropdownMenuSeparator />
-                                    <RenameChatDialog
+                                  {/* Rename Chat */}
+                                  {onRenameChat && (
+                                    <>
+                                      <DropdownMenuSeparator />
+                                      <RenameChatDialog
                                       chatId={currentChatId}
                                       currentName={
                                         chatData.name || 'Untitled Chat'
@@ -922,17 +937,11 @@ export default function PromptComponent({
                                       onRename={handleRenameChat}
                                       onOpenChange={setIsDialogOpen}
                                     />
-                                  </>
-                                )}
+                                    </>
+                                  )}
 
-                              {/* Delete Chat - Only show when we have project context and chat is loaded */}
-                              {showDropdowns &&
-                                currentProjectId &&
-                                currentChatId &&
-                                currentChatId !== 'new' &&
-                                onDeleteChat &&
-                                chatData && (
-                                  <>
+                                  {/* Delete Chat */}
+                                  {onDeleteChat && (
                                     <AlertDialog>
                                       <AlertDialogTrigger asChild>
                                         <DropdownMenuItem
@@ -965,10 +974,10 @@ export default function PromptComponent({
                                         </AlertDialogFooter>
                                       </AlertDialogContent>
                                     </AlertDialog>
-                                  </>
-                                )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                                  )}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
 
                           {/* Close button - only show on mobile */}
                           <Button
@@ -1002,6 +1011,32 @@ export default function PromptComponent({
         alt={previewState.alt}
         isVisible={previewState.isVisible}
         position={previewState.position}
+      />
+
+      {/* Project Management Dialogs */}
+      <CreateProjectDialog
+        open={showCreateProject}
+        onOpenChange={setShowCreateProject}
+        onProjectCreated={(project) => {
+          // Reload projects list by calling parent's load function
+          // Or you could update the projects array directly
+          router.refresh()
+        }}
+      />
+
+      <ManageProjectsDialog
+        open={showManageProjects}
+        onOpenChange={setShowManageProjects}
+        projects={projects}
+        onProjectsChange={() => {
+          // Reload projects list
+          router.refresh()
+        }}
+      />
+
+      <ManageToolsDialog
+        open={showManageTools}
+        onOpenChange={setShowManageTools}
       />
     </>
   )

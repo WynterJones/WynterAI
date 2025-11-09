@@ -9,7 +9,7 @@ interface Profile {
   email: string
   full_name: string | null
   avatar_url: string | null
-  tier: "free" | "paid"
+  tier: "free" | "paid" | "admin"
   vercel_token: string | null
   v0_api_key: string | null
   has_completed_onboarding: boolean

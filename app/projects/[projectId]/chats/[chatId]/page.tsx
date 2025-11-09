@@ -7,6 +7,7 @@ import PromptComponent from '../../../../components/prompt-component'
 import ApiKeyError from '../../../../components/api-key-error'
 import RateLimitDialog from '../../../../components/rate-limit-dialog'
 import ErrorDialog from '../../../../components/error-dialog'
+import { CanvasToolbar } from '@/components/canvas/canvas-toolbar'
 import { useApiValidation } from '../../../../../lib/hooks/useApiValidation'
 
 export default function ChatPage() {
@@ -396,9 +397,22 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="relative min-h-dvh bg-background">
+    <div className="relative min-h-dvh bg-background flex flex-col">
+      {/* Canvas Toolbar - Only show for active chats */}
+      {chatId !== 'new' && chatId !== 'new-chat' && chatData && (
+        <CanvasToolbar
+          chatId={chatId}
+          projectId={projectId}
+          deployUrl={chatData.deploy_url}
+          onDeploySuccess={() => {
+            // Reload chat data to get updated deploy_url
+            loadChatData()
+          }}
+        />
+      )}
+
       {/* Preview Area */}
-      <div className="absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 overflow-hidden" style={{ top: chatId !== 'new' && chatId !== 'new-chat' && chatData ? '56px' : '0' }}>
         {generatedApp ? (
           <div className="w-full h-full bg-white">
             {/* Preview container */}

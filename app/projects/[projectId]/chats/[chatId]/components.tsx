@@ -29,7 +29,8 @@ import { cn } from '@/lib/utils'
 
 interface Project {
   id: string
-  name?: string
+  title?: string
+  name?: string // For backwards compatibility
 }
 
 interface Chat {
@@ -39,8 +40,8 @@ interface Chat {
 }
 
 interface ProjectDropdownProps {
-  currentProjectId: string
-  currentChatId: string
+  currentProjectId?: string | null
+  currentChatId?: string | null
   projects: Project[]
   onProjectChange?: (projectId: string) => void
 }
@@ -102,13 +103,14 @@ export function ProjectDropdown({
   const handleProjectSelect = (projectId: string) => {
     setOpen(false)
 
-    // Always navigate to the selected project page for consistent behavior across all pages
-    if (projectId === 'new') {
-      // For new project, redirect to homepage
-      router.push('/')
-    } else if (projectId !== currentProjectId) {
-      // For existing projects, always navigate to the project page
+    // Navigate to the selected project page
+    if (projectId !== currentProjectId) {
       router.push(`/projects/${projectId}`)
+    }
+
+    // Notify parent of selection change
+    if (onProjectChange) {
+      onProjectChange(projectId)
     }
   }
 
@@ -121,9 +123,9 @@ export function ProjectDropdown({
       aria-expanded={open}
     >
       <span className="text-sm text-gray-900 dark:text-white truncate">
-        {currentProjectId === 'new'
-          ? 'New Project'
-          : currentProject?.name || 'Project'}
+        {!currentProjectId || currentProjectId === 'new'
+          ? 'Select Project'
+          : currentProject?.title || currentProject?.name || 'Project'}
       </span>
       <ChevronDownIcon className="h-4 w-4 text-gray-600 dark:text-white flex-shrink-0" />
     </Button>
@@ -135,25 +137,17 @@ export function ProjectDropdown({
       <CommandList className="max-h-[200px]">
         <CommandEmpty>No projects found.</CommandEmpty>
         <CommandGroup>
-          <CommandItem
-            value="new-project"
-            onSelect={() => handleProjectSelect('new')}
-            className="justify-between"
-          >
-            <span>+ New Project</span>
-          </CommandItem>
-          {projects.length > 0 && <CommandSeparator />}
           {projects.map((project) => (
             <CommandItem
               key={project.id}
-              value={project.name || 'Untitled Project'}
+              value={project.title || project.name || 'Untitled Project'}
               onSelect={() => handleProjectSelect(project.id)}
               className={cn(
                 'justify-between',
                 project.id === currentProjectId && 'bg-accent',
               )}
             >
-              <span>{project.name || 'Untitled Project'}</span>
+              <span>{project.title || project.name || 'Untitled Project'}</span>
               {project.id === currentProjectId && (
                 <CheckIcon className="h-4 w-4" />
               )}

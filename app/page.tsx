@@ -6,11 +6,15 @@ import PromptComponent from './components/prompt-component'
 import ApiKeyError from './components/api-key-error'
 import RateLimitDialog from './components/rate-limit-dialog'
 import ErrorDialog from './components/error-dialog'
+import { TemplatesSlider } from '../components/templates-slider'
+import { CreditsDropdown } from '../components/credits-dropdown'
+import { UserMenuDropdown } from '../components/user-menu-dropdown'
 import { useApiValidation } from '../lib/hooks/useApiValidation'
 import { useAuth } from '../lib/hooks/useAuth'
 import { AuthDialog } from '../components/auth'
 import { Button } from '../components/ui/button'
 import { Dialog, DialogContent, DialogTitle } from '../components/ui/dialog'
+import Image from 'next/image'
 
 export default function HomePage() {
   const router = useRouter()
@@ -18,7 +22,7 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null)
   const [projects, setProjects] = useState<any[]>([])
   const [projectsLoaded, setProjectsLoaded] = useState(false)
-  const [selectedProjectId, setSelectedProjectId] = useState('new')
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
   const [selectedChatId, setSelectedChatId] = useState('new')
   const [projectChats, setProjectChats] = useState<any[]>([])
   const [showRateLimitDialog, setShowRateLimitDialog] = useState(false)
@@ -29,12 +33,22 @@ export default function HomePage() {
   const [showErrorDialog, setShowErrorDialog] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [showAuthDialog, setShowAuthDialog] = useState(false)
-  const [authDialogMode, setAuthDialogMode] = useState<'login' | 'register'>('login')
+  const [authDialogMode, setAuthDialogMode] = useState<'login' | 'register'>(
+    'login',
+  )
   const [showVideoDialog, setShowVideoDialog] = useState(false)
+  const [selectedTemplate, setSelectedTemplate] = useState<any>(null)
 
   // API validation on page load
   const { isValidating, showApiKeyError } = useApiValidation()
-  const { user, loading: authLoading } = useAuth()
+  const { user, profile, loading: authLoading } = useAuth()
+
+  // Redirect to onboarding if user hasn't completed it
+  useEffect(() => {
+    if (user && profile && !profile.has_completed_onboarding) {
+      router.push('/onboarding')
+    }
+  }, [user, profile, router])
 
   // Load projects on page mount (only if API is valid and user is authenticated)
   useEffect(() => {
@@ -126,15 +140,8 @@ export default function HomePage() {
   }
 
   const handleProjectChange = async (newProjectId: string) => {
-    if (newProjectId === 'new') {
-      // Stay on homepage for new project
-      setSelectedProjectId('new')
-      setSelectedChatId('new')
-      setProjectChats([])
-    } else {
-      // Redirect to the selected project page
-      router.push(`/projects/${newProjectId}`)
-    }
+    // Redirect to the selected project page
+    router.push(`/projects/${newProjectId}`)
   }
 
   const handleChatChange = (newChatId: string) => {
@@ -168,6 +175,10 @@ export default function HomePage() {
           imageGenerations: settings.imageGenerations,
           thinking: settings.thinking,
           ...(attachments && attachments.length > 0 && { attachments }),
+          ...(selectedTemplate && {
+            templateZipUrl: selectedTemplate.zip_url,
+            templateName: selectedTemplate.name,
+          }),
         }),
       })
 
@@ -226,59 +237,91 @@ export default function HomePage() {
 
   return (
     <div className="relative min-h-dvh bg-background">
-      {/* Auth Button in Top Right */}
+      {/* Top Bar */}
       {!authLoading && (
-        <div className="absolute top-4 right-4 z-10">
-          {user ? (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">
-                {user.email}
-              </span>
-            </div>
-          ) : (
-            <Button onClick={() => {
-              setAuthDialogMode('login')
-              setShowAuthDialog(true)
-            }}>
-              Login
-            </Button>
-          )}
-        </div>
-      )}
+        <>
+          {/* Logo in Top Left */}
+          <div className="absolute top-4 left-4 z-10">
+            <Image
+              src="/wynter-logo.png"
+              alt="Wynter.AI"
+              width={160}
+              height={40}
+              priority
+            />
+          </div>
 
-      {/* Homepage Welcome Message */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div
-          className="text-center px-4 sm:px-6"
-          style={{ transform: 'translateY(-25%)' }}
-        >
-          <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-4 text-pretty">
-            Build an Embeddable Tool
-          </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto text-pretty">
-            Describe any tools, build it and add to site (ClickFunnels, Shopify,
-            GHL, anywhere). Select a pre-made template or start from scratch.
-          </p>
-          {!user && !authLoading && (
-            <div className="flex gap-3 mt-6 justify-center">
+          {/* Auth/Credits in Top Right */}
+          <div className="absolute top-4 right-4 z-10">
+            {user ? (
+              <div className="flex items-center gap-2">
+                <CreditsDropdown />
+                <UserMenuDropdown userEmail={user.email || ''} />
+              </div>
+            ) : (
               <Button
                 onClick={() => {
-                  setAuthDialogMode('register')
+                  setAuthDialogMode('login')
                   setShowAuthDialog(true)
                 }}
-                size="lg"
               >
-                Create Account
+                Login
               </Button>
-              <Button
-                onClick={() => setShowVideoDialog(true)}
-                size="lg"
-                variant="outline"
-              >
-                Watch Video
-              </Button>
-            </div>
-          )}
+            )}
+          </div>
+        </>
+      )}
+
+      {/* Homepage Content */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <div
+          className="w-full px-4 sm:px-6"
+          style={{ transform: 'translateY(-20%)' }}
+        >
+          {/* Templates Slider */}
+          <TemplatesSlider
+            onSelectTemplate={(template) => {
+              setSelectedTemplate(template)
+              // If user is not authenticated, show auth dialog
+              if (!user) {
+                setAuthDialogMode('register')
+                setShowAuthDialog(true)
+              }
+            }}
+            selectedTemplateId={selectedTemplate?.id}
+          />
+
+          {/* Welcome Message */}
+          <div className="text-center">
+            <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-4 text-pretty">
+              Build an Embeddable Tool
+            </h1>
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto text-pretty">
+              Describe any tools, build it and add to your site, works in
+              ClickFunnels, Shopify, GHL, anywhere. Select a pre-made template
+              or start from scratch and add value to your offer.
+            </p>
+            {!user && !authLoading && (
+              <div className="flex gap-3 mt-6 justify-center">
+                <Button
+                  onClick={() => {
+                    setAuthDialogMode('register')
+                    setShowAuthDialog(true)
+                  }}
+                  size="lg"
+                >
+                  Create Account
+                </Button>
+                <Button
+                  onClick={() => setShowVideoDialog(true)}
+                  size="lg"
+                  variant="outline"
+                >
+                  Watch Video
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -298,6 +341,8 @@ export default function HomePage() {
           setAuthDialogMode('register')
           setShowAuthDialog(true)
         }}
+        selectedTemplate={selectedTemplate}
+        onTemplateChange={setSelectedTemplate}
       />
 
       <RateLimitDialog
@@ -321,7 +366,9 @@ export default function HomePage() {
 
       <Dialog open={showVideoDialog} onOpenChange={setShowVideoDialog}>
         <DialogContent className="max-w-4xl p-0">
-          <DialogTitle className="sr-only">Watch Introduction Video</DialogTitle>
+          <DialogTitle className="sr-only">
+            Watch Introduction Video
+          </DialogTitle>
           <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
             <iframe
               className="absolute top-0 left-0 w-full h-full rounded-lg"

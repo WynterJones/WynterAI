@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -177,6 +177,15 @@
   }
   body {
     @apply bg-background text-foreground font-mono;
+    background-image: radial-gradient(circle, #eef5fc 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  body.dark {
+    background-image: radial-gradient(
+      circle,
+      rgba(255, 255, 255, 0.05) 1px,
+      transparent 1px
+    );
   }
   html {
     font-family: var(--font-geist-mono), ui-monospace, monospace;
@@ -188,4 +197,8 @@
   .mobile-deploy-buttons {
     flex-direction: column !important;
   }
+}
+
+.bg-background {
+  background: #f9fbfc;
 }

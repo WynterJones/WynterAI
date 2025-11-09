@@ -10,18 +10,18 @@
 
 - [x] Lock homepage features for unauthenticated users
 - [x] Add registration from homepage
-- [ ] Create step-by-step onboarding flow
-  - [ ] Step: Add Vercel Token
-  - [ ] Step: Add v0 API Key
-  - [ ] Step: Payment ($100 one-time)
-  - [ ] Step: Order bump for template library ($200, skippable)
-  - [ ] Mock checkout step for Stripe integration
-- [ ] Redirect to homepage after onboarding completion
+- [x] Create step-by-step onboarding flow
+  - [x] Step: Add Vercel Token
+  - [x] Step: Add v0 API Key
+  - [x] Step: Payment ($100 one-time)
+  - [x] Step: Order bump for template library ($200, skippable)
+  - [x] Mock checkout step for Stripe integration
+- [x] Redirect to homepage after onboarding completion
 
 ## User Tiers & Limits
 
 - [x] Free tier: 1 free chat limit
-- [ ] Free tier: Disable chat deletion
+- [x] Free tier: Disable chat deletion
 - [x] Add upgrade button in UI
 - [x] Show upgrade prompts for limited features
 
@@ -38,16 +38,16 @@
 
 ## Canvas Tools Toolbar
 
-- [ ] Add toolbar at top when chat is started
-- [ ] Add dimension controls (width, height, auto-height, full width, static sizes)
-- [ ] Add corners control
-- [ ] Add shadow control
-- [ ] Add border control
-- [ ] "Add to Your Site" button opens right drawer
-- [ ] Right drawer: Publish/Publish Changes button
-- [ ] Show deployment status when deploying to Vercel
-- [ ] Generate iframe embed code with deployed link
-- [ ] Add auto-height option for iframe with parent JS
+- [x] Add toolbar at top when chat is started
+- [x] Add dimension controls (width, height, auto-height, full width, static sizes)
+- [x] Add corners control
+- [x] Add shadow control
+- [x] Add border control
+- [x] "Add to Your Site" button opens right drawer
+- [x] Right drawer: Publish/Publish Changes button
+- [x] Show deployment status when deploying to Vercel
+- [x] Generate iframe embed code with deployed link
+- [x] Add auto-height option for iframe with parent JS
 
 ## Homepage Main Flow
 
@@ -60,13 +60,8 @@
 - [ ] Add selected template to prompt box
 - [ ] Use template ZIP URL as starting point for v0 chat with user's prompt
 
-## Embedded Micro Tools
-
-- [ ] Ensure all created apps deploy as iframe-embeddable tools
-- [ ] Configure iframe settings for embedded apps
-
 ## Admin Area
 
-- [ ] Add profiles with role "admin"
-- [ ] Basic admin area at /hq with user stats and chats numbers, etc
-- [ ] Manage templates that are avaialbe name, screenshot, url for zip
+- [x] Add profiles with role "admin"
+- [x] Basic admin area at /hq with user stats and chats numbers, etc
+- [x] Manage templates that are available: name, screenshot, url for zip
