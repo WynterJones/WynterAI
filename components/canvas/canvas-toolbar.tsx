@@ -25,8 +25,8 @@ export function CanvasToolbar({
   return (
     <>
       <div className="backdrop-blur bg-white border-b shadow relative z-10">
-        <div className="container flex h-14 items-center justify-between px-4">
-          <div className="flex items-center gap-4 flex-1 justify-center">
+        <div className="container mx-auto flex h-14 items-center justify-between px-4 max-w-7xl">
+          <div className="flex items-center gap-4 flex-1">
             <DimensionControl />
             <div className="h-6 w-px bg-border" />
             <StyleControls />

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { ProjectDropdown, ChatDropdown } from './components'
 import PromptComponent from '../../../../components/prompt-component'
 import ApiKeyError from '../../../../components/api-key-error'
@@ -451,14 +452,17 @@ export default function ChatPage() {
     <div className="relative min-h-dvh bg-background flex flex-col">
       {/* Header with Logo and User Menu */}
       <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between px-4">
-          <Image
-            src="/wynter-logo.png"
-            alt="Wynter.AI"
-            width={140}
-            height={35}
-            priority
-          />
+        <div className="container mx-auto flex h-16 items-center justify-between py-0.5 px-4 max-w-7xl">
+          <Link href="/">
+            <Image
+              src="/wynter-logo.png"
+              alt="Wynter.AI"
+              width={140}
+              height={35}
+              priority
+              className="cursor-pointer"
+            />
+          </Link>
 
           {user && (
             <div className="flex items-center gap-2">

@@ -68,7 +68,11 @@ export function StyleControls() {
             <ChevronDown className="h-3 w-3 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-64" align="start" onOpenAutoFocus={(e) => e.preventDefault()}>
+        <PopoverContent
+          className="w-64"
+          align="start"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
           <div className="space-y-3">
             <Label className="text-sm font-medium">Corner Radius</Label>
             <div className="space-y-2">
@@ -105,7 +109,11 @@ export function StyleControls() {
             <ChevronDown className="h-3 w-3 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-64" align="start" onOpenAutoFocus={(e) => e.preventDefault()}>
+        <PopoverContent
+          className="w-64"
+          align="start"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
           <div className="space-y-3">
             <Label className="text-sm font-medium">Box Shadow</Label>
             <div className="space-y-2">
@@ -122,7 +130,10 @@ export function StyleControls() {
                     key={preset.value}
                     variant={settings.shadow === preset.value ? "default" : "outline"}
                     size="sm"
-                    onClick={() => updateSettings({ shadow: preset.value as any })}
+                    onMouseDown={(e) => {
+                      e.preventDefault()
+                      updateSettings({ shadow: preset.value as any })
+                    }}
                     className="text-xs h-7 px-1"
                   >
                     {preset.label}
@@ -142,7 +153,11 @@ export function StyleControls() {
             <ChevronDown className="h-3 w-3 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-72" align="start" onOpenAutoFocus={(e) => e.preventDefault()}>
+        <PopoverContent
+          className="w-72"
+          align="start"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
           <div className="space-y-3">
             <Label className="text-sm font-medium">Border Width</Label>
             <div className="space-y-2">
@@ -159,7 +174,10 @@ export function StyleControls() {
                     key={preset.value}
                     variant={settings.borderWidth === preset.value ? "default" : "outline"}
                     size="sm"
-                    onClick={() => updateSettings({ borderWidth: preset.value })}
+                    onMouseDown={(e) => {
+                      e.preventDefault()
+                      updateSettings({ borderWidth: preset.value })
+                    }}
                     className="text-xs"
                   >
                     {preset.label}
