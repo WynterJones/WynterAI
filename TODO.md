@@ -1,13 +1,15 @@
 # WynterAI Todo
 
 ## Authentication & User Management
-- [ ] Add Supabase integration
-- [ ] Implement user authentication system
-- [ ] Connect users to database
+
+- [x] Add Supabase integration
+- [x] Implement user authentication system
+- [x] Connect users to database
 
 ## Onboarding Flow
-- [ ] Lock homepage features for unauthenticated users
-- [ ] Add registration from homepage
+
+- [x] Lock homepage features for unauthenticated users
+- [x] Add registration from homepage
 - [ ] Create step-by-step onboarding flow
   - [ ] Step: Add Vercel Token
   - [ ] Step: Add v0 API Key
@@ -17,21 +19,25 @@
 - [ ] Redirect to homepage after onboarding completion
 
 ## User Tiers & Limits
-- [ ] Free tier: 1 free chat limit
+
+- [x] Free tier: 1 free chat limit
 - [ ] Free tier: Disable chat deletion
-- [ ] Add upgrade button in UI
-- [ ] Show upgrade prompts for limited features
+- [x] Add upgrade button in UI
+- [x] Show upgrade prompts for limited features
 
 ## Database & Projects
-- [ ] Connect projects to database per user
-- [ ] Connect chats to database per user
-- [ ] Save chat details (deploy URL, etc) as required by v0
+
+- [x] Connect projects to database per user
+- [x] Connect chats to database per user
+- [x] Save chat details (deploy URL, etc) as required by v0
 
 ## Chat Functionality
-- [ ] Create new chat flow
-- [ ] Store v0 required details for each chat
+
+- [x] Create new chat flow
+- [x] Store v0 required details for each chat
 
 ## Canvas Tools Toolbar
+
 - [ ] Add toolbar at top when chat is started
 - [ ] Add dimension controls (width, height, auto-height, full width, static sizes)
 - [ ] Add corners control
@@ -44,8 +50,9 @@
 - [ ] Add auto-height option for iframe with parent JS
 
 ## Homepage Main Flow
-- [ ] Add headline and subheadline
-- [ ] Keep existing prompt box
+
+- [x] Add headline and subheadline
+- [x] Keep existing prompt box
 - [ ] Create cycling slider of app template screenshots
 - [ ] Add "Use This Template" button to each template
 - [ ] Add "Browse Library" button
@@ -54,5 +61,12 @@
 - [ ] Use template ZIP URL as starting point for v0 chat with user's prompt
 
 ## Embedded Micro Tools
+
 - [ ] Ensure all created apps deploy as iframe-embeddable tools
 - [ ] Configure iframe settings for embedded apps
+
+## Admin Area
+
+- [ ] Add profiles with role "admin"
+- [ ] Basic admin area at /hq with user stats and chats numbers, etc
+- [ ] Manage templates that are avaialbe name, screenshot, url for zip

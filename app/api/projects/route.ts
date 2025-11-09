@@ -1,29 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { v0 } from 'v0-sdk'
-import {
-  getUserIP,
-  getUserProjects,
-  associateProjectWithIP,
-} from '@/lib/rate-limiter'
+import { createClient } from '@/lib/supabase/server'
 
 export async function GET(request: NextRequest) {
   try {
-    // Get user's IP
-    const userIP = getUserIP(request)
+    const supabase = await createClient()
 
-    // Get all projects from v0
-    const response = await v0.projects.find()
-    const allProjects = response.data || response || []
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
 
-    // Get user's project IDs from Redis
-    const userProjectIds = await getUserProjects(userIP)
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
-    // Filter projects to only include those owned by this user
-    const userProjects = allProjects.filter((project: any) =>
-      userProjectIds.includes(project.id),
-    )
+    // Get user's projects from Supabase
+    const { data: projects, error: projectsError } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
 
-    return NextResponse.json({ data: userProjects })
+    if (projectsError) {
+      console.error('Error fetching projects:', projectsError)
+      return NextResponse.json({ data: [] })
+    }
+
+    return NextResponse.json({ data: projects || [] })
   } catch (error) {
     // Check if it's an API key error
     if (error instanceof Error) {
@@ -49,27 +51,46 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { name } = body
+    const supabase = await createClient()
 
-    if (!name || typeof name !== 'string' || !name.trim()) {
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const { title, description } = body
+
+    if (!title || typeof title !== 'string' || !title.trim()) {
       return NextResponse.json(
-        { error: 'Project name is required' },
+        { error: 'Project title is required' },
         { status: 400 },
       )
     }
 
-    // Get user's IP
-    const userIP = getUserIP(request)
+    // Generate a unique project ID
+    const projectId = `proj_${Date.now()}_${Math.random().toString(36).substring(7)}`
 
-    // Create project using v0 SDK
-    const project = await v0.projects.create({
-      name: name.trim(),
-    })
+    // Create project in Supabase
+    const { data: project, error: createError } = await supabase
+      .from('projects')
+      .insert({
+        id: projectId,
+        user_id: user.id,
+        title: title.trim(),
+        description: description || null,
+      })
+      .select()
+      .single()
 
-    // Associate the project with the user's IP
-    if (project.id) {
-      await associateProjectWithIP(project.id, userIP)
+    if (createError) {
+      console.error('Error creating project:', createError)
+      return NextResponse.json(
+        { error: 'Failed to create project' },
+        { status: 500 }
+      )
     }
 
     return NextResponse.json(project)

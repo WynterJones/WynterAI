@@ -7,6 +7,10 @@ import ApiKeyError from './components/api-key-error'
 import RateLimitDialog from './components/rate-limit-dialog'
 import ErrorDialog from './components/error-dialog'
 import { useApiValidation } from '../lib/hooks/useApiValidation'
+import { useAuth } from '../lib/hooks/useAuth'
+import { AuthDialog } from '../components/auth'
+import { Button } from '../components/ui/button'
+import { Dialog, DialogContent, DialogTitle } from '../components/ui/dialog'
 
 export default function HomePage() {
   const router = useRouter()
@@ -24,16 +28,20 @@ export default function HomePage() {
   }>({})
   const [showErrorDialog, setShowErrorDialog] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const [showAuthDialog, setShowAuthDialog] = useState(false)
+  const [authDialogMode, setAuthDialogMode] = useState<'login' | 'register'>('login')
+  const [showVideoDialog, setShowVideoDialog] = useState(false)
 
   // API validation on page load
   const { isValidating, showApiKeyError } = useApiValidation()
+  const { user, loading: authLoading } = useAuth()
 
-  // Load projects on page mount (only if API is valid)
+  // Load projects on page mount (only if API is valid and user is authenticated)
   useEffect(() => {
-    if (!isValidating && !showApiKeyError) {
+    if (!isValidating && !showApiKeyError && user) {
       loadProjectsWithCache()
     }
-  }, [isValidating, showApiKeyError])
+  }, [isValidating, showApiKeyError, user])
 
   const loadProjectsWithCache = async () => {
     // First, try to load from sessionStorage for immediate display
@@ -138,6 +146,13 @@ export default function HomePage() {
     settings: { modelId: string; imageGenerations: boolean; thinking: boolean },
     attachments?: { url: string; name?: string; type?: string }[],
   ) => {
+    // Check if user is authenticated
+    if (!user) {
+      setAuthDialogMode('register')
+      setShowAuthDialog(true)
+      return
+    }
+
     setIsLoading(true)
     setError(null)
 
@@ -211,6 +226,26 @@ export default function HomePage() {
 
   return (
     <div className="relative min-h-dvh bg-background">
+      {/* Auth Button in Top Right */}
+      {!authLoading && (
+        <div className="absolute top-4 right-4 z-10">
+          {user ? (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">
+                {user.email}
+              </span>
+            </div>
+          ) : (
+            <Button onClick={() => {
+              setAuthDialogMode('login')
+              setShowAuthDialog(true)
+            }}>
+              Login
+            </Button>
+          )}
+        </div>
+      )}
+
       {/* Homepage Welcome Message */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div
@@ -224,6 +259,26 @@ export default function HomePage() {
             Describe any tools, build it and add to site (ClickFunnels, Shopify,
             GHL, anywhere). Select a pre-made template or start from scratch.
           </p>
+          {!user && !authLoading && (
+            <div className="flex gap-3 mt-6 justify-center">
+              <Button
+                onClick={() => {
+                  setAuthDialogMode('register')
+                  setShowAuthDialog(true)
+                }}
+                size="lg"
+              >
+                Create Account
+              </Button>
+              <Button
+                onClick={() => setShowVideoDialog(true)}
+                size="lg"
+                variant="outline"
+              >
+                Watch Video
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -238,6 +293,11 @@ export default function HomePage() {
         currentChatId={selectedChatId}
         onProjectChange={handleProjectChange}
         onChatChange={handleChatChange}
+        isAuthenticated={!!user}
+        onPromptClick={() => {
+          setAuthDialogMode('register')
+          setShowAuthDialog(true)
+        }}
       />
 
       <RateLimitDialog
@@ -252,6 +312,28 @@ export default function HomePage() {
         onClose={() => setShowErrorDialog(false)}
         message={errorMessage}
       />
+
+      <AuthDialog
+        open={showAuthDialog}
+        onOpenChange={setShowAuthDialog}
+        defaultMode={authDialogMode}
+      />
+
+      <Dialog open={showVideoDialog} onOpenChange={setShowVideoDialog}>
+        <DialogContent className="max-w-4xl p-0">
+          <DialogTitle className="sr-only">Watch Introduction Video</DialogTitle>
+          <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+            <iframe
+              className="absolute top-0 left-0 w-full h-full rounded-lg"
+              src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1"
+              title="YouTube video player"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

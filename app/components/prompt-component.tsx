@@ -122,6 +122,12 @@ interface PromptComponentProps {
 
   // Rename chat callback
   onRenameChat?: (newName: string) => Promise<void>
+
+  // Callback for when prompt is clicked while user is not logged in
+  onPromptClick?: () => void
+
+  // Is user logged in?
+  isAuthenticated?: boolean
 }
 
 export default function PromptComponent({
@@ -141,6 +147,8 @@ export default function PromptComponent({
   onChatChange,
   onDeleteChat,
   onRenameChat,
+  onPromptClick,
+  isAuthenticated = true,
 }: PromptComponentProps) {
   const router = useRouter()
   const { settings } = useSettings()
@@ -565,13 +573,19 @@ export default function PromptComponent({
                 isDragging
                   ? 'border-primary border-2 bg-primary/5'
                   : 'border-border/50'
-              }`}
+              } ${!isAuthenticated ? 'cursor-pointer' : ''}`}
               data-drag-container="prompt"
               onDragEnter={handleDragEnter}
               onDragLeave={handleDragLeave}
               onDragOver={handleDragOver}
               onDrop={handleDrop}
               onDragEnd={handleDragEnd}
+              onClick={(e) => {
+                if (!isAuthenticated && onPromptClick) {
+                  e.preventDefault()
+                  onPromptClick()
+                }
+              }}
             >
               {/* Drag overlay */}
               {isDragging && isOverPrompt && (
@@ -685,7 +699,8 @@ export default function PromptComponent({
                       className={`w-full pl-2 sm:pl-2.5 py-2 sm:py-4 text-base sm:text-lg bg-transparent border-0 focus:ring-0 focus:outline-none text-foreground placeholder-muted-foreground font-medium resize-none overflow-hidden ${
                         speechSupported ? 'pr-24 sm:pr-32' : 'pr-20 sm:pr-24'
                       }`}
-                      disabled={isLoading}
+                      disabled={isLoading || !isAuthenticated}
+                      readOnly={!isAuthenticated}
                       style={{
                         minHeight: '44px', // Smaller on mobile
                         height: 'auto',

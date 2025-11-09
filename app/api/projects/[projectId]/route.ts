@@ -1,11 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { v0 } from 'v0-sdk'
+import { createClient } from '@/lib/supabase/server'
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ projectId: string }> },
 ) {
   try {
+    const supabase = await createClient()
+
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { projectId } = await params
 
     if (!projectId) {
@@ -15,10 +24,35 @@ export async function GET(
       )
     }
 
-    // Get project details by ID
-    const response = await v0.projects.getById({ projectId })
+    // Get project and verify ownership
+    const { data: project, error: projectError } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('id', projectId)
+      .eq('user_id', user.id)
+      .single()
 
-    return NextResponse.json(response)
+    if (projectError || !project) {
+      return NextResponse.json(
+        { error: 'Project not found' },
+        { status: 404 }
+      )
+    }
+
+    // Get chats for this project
+    const { data: chats, error: chatsError } = await supabase
+      .from('chats')
+      .select('*')
+      .eq('project_id', projectId)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+
+    if (chatsError) {
+      console.error('Error fetching chats:', chatsError)
+      return NextResponse.json({ ...project, chats: [] })
+    }
+
+    return NextResponse.json({ ...project, chats: chats || [] })
   } catch (error) {
     // Check if it's an API key error
     if (error instanceof Error) {

@@ -1,17 +1,14 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Open_Sans } from 'next/font/google'
 import { ThemeProvider } from 'next-themes'
+import { AuthProvider } from '@/lib/hooks/useAuth'
 import DeployBanner from '../components/deploy-banner'
 import './globals.css'
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const openSans = Open_Sans({
+  variable: '--font-open-sans',
   subsets: ['latin'],
-})
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700', '800'],
 })
 
 export const metadata: Metadata = {
@@ -38,7 +35,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${openSans.variable} antialiased font-sans`}
+        style={{ fontFamily: 'var(--font-open-sans)' }}
       >
         <ThemeProvider
           attribute="class"
@@ -47,7 +45,9 @@ export default function RootLayout({
           disableTransitionOnChange
           storageKey="theme"
         >
-          {children}
+          <AuthProvider>
+            {children}
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

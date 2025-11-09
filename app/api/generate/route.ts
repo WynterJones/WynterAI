@@ -1,14 +1,18 @@
 import { v0, ChatDetail } from 'v0-sdk'
 import { NextRequest, NextResponse } from 'next/server'
-import {
-  checkRateLimit,
-  getUserIdentifier,
-  getUserIP,
-  associateProjectWithIP,
-} from '@/lib/rate-limiter'
+import { createClient } from '@/lib/supabase/server'
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = await createClient()
+
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const {
       message,
       chatId,
@@ -26,33 +30,33 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check rate limit for ALL generations (both new and existing chats)
-    const userIdentifier = getUserIdentifier(request)
-    const userIP = getUserIP(request)
-    const rateLimitResult = await checkRateLimit(userIdentifier)
+    // Get user profile to check tier and limits
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single()
 
-    if (!rateLimitResult.success) {
-      const resetTime = rateLimitResult.resetTime.toLocaleString()
-      return NextResponse.json(
-        {
-          error: 'RATE_LIMIT_EXCEEDED',
-          message: `You've reached the limit of 3 generations per 12 hours. Please try again after ${resetTime}.`,
-          limit: rateLimitResult.limit,
-          remaining: rateLimitResult.remaining,
-          resetTime: rateLimitResult.resetTime.toISOString(),
-        },
-        {
-          status: 429,
-          headers: {
-            'X-RateLimit-Limit': rateLimitResult.limit.toString(),
-            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
-            'X-RateLimit-Reset': rateLimitResult.reset.toString(),
+    // Check rate limit for free users (only for new chats)
+    if (profile?.tier === 'free' && !chatId) {
+      const { count } = await supabase
+        .from('chats')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+
+      if (count && count >= 1) {
+        return NextResponse.json(
+          {
+            error: 'FREE_TIER_LIMIT',
+            message: 'Free tier is limited to 1 chat. Please upgrade to create more.',
           },
-        },
-      )
+          { status: 403 }
+        )
+      }
     }
 
     let response
+    let dbProjectId = projectId
 
     if (chatId) {
       // Continue existing chat using sendMessage
@@ -67,7 +71,35 @@ export async function POST(request: NextRequest) {
         responseMode: 'sync',
         ...(attachments.length > 0 && { attachments }),
       })) as ChatDetail
+
+      // Update chat in database
+      await supabase
+        .from('chats')
+        .update({
+          title: response.name || 'Untitled',
+          metadata: response,
+        })
+        .eq('id', chatId)
+        .eq('user_id', user.id)
     } else {
+      // Create a project if none specified
+      if (!dbProjectId) {
+        const newProjectId = `proj_${Date.now()}_${Math.random().toString(36).substring(7)}`
+
+        const { data: newProject } = await supabase
+          .from('projects')
+          .insert({
+            id: newProjectId,
+            user_id: user.id,
+            title: 'New Project',
+            description: message.substring(0, 100),
+          })
+          .select()
+          .single()
+
+        dbProjectId = newProject?.id || newProjectId
+      }
+
       // Create new chat
       response = (await v0.chats.create({
         system:
@@ -79,27 +111,23 @@ export async function POST(request: NextRequest) {
           thinking: thinking,
         },
         responseMode: 'sync',
-        ...(projectId && { projectId }),
         ...(attachments.length > 0 && { attachments }),
       })) as ChatDetail
 
-      // If a project was created/returned, associate it with the user's IP
-      if (response.projectId) {
-        await associateProjectWithIP(response.projectId, userIP)
-      }
-
-      // Rename the new chat to "Main" for new projects
-      try {
-        await v0.chats.update({
-          chatId: response.id,
-          name: 'Main',
+      // Save chat to database
+      await supabase
+        .from('chats')
+        .insert({
+          id: response.id,
+          project_id: dbProjectId,
+          user_id: user.id,
+          title: response.name || 'Main',
+          status: 'active',
+          metadata: response,
         })
-      } catch (updateError) {
-        // Don't fail the entire request if renaming fails
-      }
     }
 
-    return NextResponse.json(response)
+    return NextResponse.json({ ...response, projectId: dbProjectId })
   } catch (error) {
     // Check if it's an API key error
     if (error instanceof Error) {
