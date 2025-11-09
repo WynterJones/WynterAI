@@ -1,13 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,7 +20,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { MoreVertical, Pencil, Trash2, Wrench, ExternalLink } from "lucide-react"
+import { MoreVertical, Pencil, Trash2, Wrench } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 interface Chat {
@@ -61,6 +55,7 @@ export function ManageToolsDialog({
   const [editName, setEditName] = useState("")
   const [deletingChat, setDeletingChat] = useState<Chat | null>(null)
   const [isUpdating, setIsUpdating] = useState(false)
+  const [selectedProjectId, setSelectedProjectId] = useState<string>("all")
   const router = useRouter()
 
   useEffect(() => {
@@ -187,31 +182,54 @@ export function ManageToolsDialog({
     router.push(`/projects/${chat.project_id}/chats/${chat.id}`)
   }
 
+  // Filter chats based on selected project
+  const filteredChats = selectedProjectId === "all"
+    ? chats
+    : chats.filter(chat => chat.project_id === selectedProjectId)
+
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Manage Tools</DialogTitle>
-            <DialogDescription>
-              View, rename, or delete your tools.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-2 py-4">
-            {loading ? (
-              <div className="text-center py-8 text-muted-foreground">
-                Loading...
+      <Drawer open={open} onOpenChange={onOpenChange}>
+        <DrawerContent className="h-[80vh]">
+          <div className="mx-auto w-full max-w-4xl overflow-y-auto p-6">
+            <DrawerHeader className="px-0">
+              <DrawerTitle className="text-3xl">My Created Tools</DrawerTitle>
+            </DrawerHeader>
+
+            <div className="mt-6 space-y-6">
+              {/* Project Filter */}
+              <div className="flex items-center gap-3">
+                <label className="text-sm font-medium text-muted-foreground">Filter by project:</label>
+                <select
+                  value={selectedProjectId}
+                  onChange={(e) => setSelectedProjectId(e.target.value)}
+                  className="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                >
+                  <option value="all">All Projects</option>
+                  {projects.map((project) => (
+                    <option key={project.id} value={project.id}>
+                      {project.title || project.name || "Untitled Project"}
+                    </option>
+                  ))}
+                </select>
               </div>
-            ) : chats.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <Wrench className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>No tools yet</p>
+
+              {/* Tools List */}
+              <div className="space-y-3">
+            {loading ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <p className="text-xl">Loading...</p>
+              </div>
+            ) : filteredChats.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <Wrench className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                <p className="text-xl">{selectedProjectId === "all" ? "No tools yet" : "No tools in this project"}</p>
               </div>
             ) : (
-              chats.map((chat) => (
+              filteredChats.map((chat) => (
                 <div
                   key={chat.id}
-                  className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer"
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer"
                   onClick={() => !editingChat && handleOpenChat(chat)}
                 >
                   {editingChat?.id === chat.id ? (
@@ -248,28 +266,16 @@ export function ManageToolsDialog({
                   ) : (
                     <>
                       <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-medium">{getChatTitle(chat)}</h4>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          {getProjectName(chat.project_id)}
-                          {chat.updated_at && (
-                            <>
-                              {" • "}
-                              Updated{" "}
-                              {new Date(chat.updated_at).toLocaleDateString()}
-                            </>
-                          )}
-                        </p>
+                        <h4 className="text-2xl font-semibold">{getChatTitle(chat)}</h4>
                       </div>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-8 w-8 p-0"
+                            className="h-10 w-10 p-0"
                           >
-                            <MoreVertical className="h-4 w-4" />
+                            <MoreVertical className="h-5 w-5" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
@@ -300,9 +306,11 @@ export function ManageToolsDialog({
                 </div>
               ))
             )}
+              </div>
+            </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </DrawerContent>
+      </Drawer>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog

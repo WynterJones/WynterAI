@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Search, X } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { TemplatePreviewDialog } from "./template-preview-dialog"
 
 interface Template {
   id: string
@@ -38,6 +39,8 @@ export function TemplatesLibrary({
   const [templates, setTemplates] = useState<Template[]>([])
   const [loading, setLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+  const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null)
+  const [showPreview, setShowPreview] = useState(false)
 
   useEffect(() => {
     if (open) {
@@ -74,38 +77,39 @@ export function TemplatesLibrary({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-full max-h-full w-screen h-screen overflow-hidden p-0 m-0 flex flex-col">
-        <DialogHeader className="px-6 pt-6 pb-4 border-b">
-          <DialogTitle>Template Library</DialogTitle>
-          <DialogDescription>
-            Choose a pre-made template to get started quickly
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-[95vw] max-h-[95vh] w-[95vw] h-[95vh] overflow-hidden p-0 flex flex-col">
+          <DialogHeader className="px-8 pt-8 pb-6 border-b">
+            <DialogTitle className="text-2xl">Template Library</DialogTitle>
+            <DialogDescription className="text-base">
+              Choose a pre-made template to get started quickly
+            </DialogDescription>
+          </DialogHeader>
 
-        {/* Search */}
-        <div className="px-6 py-4 border-b">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search templates..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-10"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
+          {/* Search */}
+          <div className="px-8 py-6 border-b">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search templates..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 pr-10"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
           </div>
-        </div>
 
-        {/* Templates Grid */}
-        <div className="px-6 py-4 overflow-y-auto flex-1">
+          {/* Templates Grid */}
+          <div className="px-8 py-6 overflow-y-auto flex-1">
           {loading ? (
             <div className="text-center py-12 text-muted-foreground">
               Loading templates...
@@ -117,7 +121,7 @@ export function TemplatesLibrary({
                 : "No templates available"}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {filteredTemplates.map((template) => (
                 <div
                   key={template.id}
@@ -160,7 +164,8 @@ export function TemplatesLibrary({
                           className="flex-1"
                           onClick={(e) => {
                             e.stopPropagation()
-                            window.open(template.preview_url, '_blank')
+                            setPreviewTemplate(template)
+                            setShowPreview(true)
                           }}
                         >
                           Preview
@@ -192,5 +197,18 @@ export function TemplatesLibrary({
         </div>
       </DialogContent>
     </Dialog>
+
+    <TemplatePreviewDialog
+      template={previewTemplate}
+      open={showPreview}
+      onOpenChange={setShowPreview}
+      onUseTemplate={(template) => {
+        if (template && onSelectTemplate) {
+          onSelectTemplate(template)
+        }
+      }}
+      isSelected={previewTemplate?.id === selectedTemplateId}
+    />
+    </>
   )
 }

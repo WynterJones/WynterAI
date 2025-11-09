@@ -9,6 +9,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,7 +29,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { MoreVertical, Pencil, Trash2, FolderOpen } from "lucide-react"
+import { MoreVertical, Pencil, Trash2, FolderOpen, Plus } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 interface Project {
@@ -91,48 +92,52 @@ export function CreateProjectDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Create New Project</DialogTitle>
-          <DialogDescription>
-            Give your project a name to get started.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="project-name">Project Name</Label>
-            <Input
-              id="project-name"
-              placeholder="My Awesome Project"
-              value={projectName}
-              onChange={(e) => setProjectName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && projectName.trim()) {
-                  handleCreate()
-                }
-              }}
-              autoFocus
-            />
+    <Drawer open={open} onOpenChange={onOpenChange}>
+      <DrawerContent className="h-[50vh]">
+        <div className="mx-auto w-full max-w-2xl overflow-y-auto p-6">
+          <DrawerHeader className="px-0">
+            <DrawerTitle className="text-3xl">Create New Project</DrawerTitle>
+          </DrawerHeader>
+
+          <div className="mt-6 space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="project-name" className="text-base">Project Name</Label>
+              <Input
+                id="project-name"
+                placeholder="My Awesome Project"
+                value={projectName}
+                onChange={(e) => setProjectName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && projectName.trim()) {
+                    handleCreate()
+                  }
+                }}
+                className="text-lg h-12"
+                autoFocus
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={isCreating}
+                size="lg"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCreate}
+                disabled={!projectName.trim() || isCreating}
+                size="lg"
+              >
+                {isCreating ? "Creating..." : "Create Project"}
+              </Button>
+            </div>
           </div>
         </div>
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isCreating}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleCreate}
-            disabled={!projectName.trim() || isCreating}
-          >
-            {isCreating ? "Creating..." : "Create Project"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </DrawerContent>
+    </Drawer>
   )
 }
 
@@ -141,6 +146,7 @@ interface ManageProjectsDialogProps {
   onOpenChange: (open: boolean) => void
   projects: Project[]
   onProjectsChange?: () => void
+  onCreateProject?: () => void
 }
 
 export function ManageProjectsDialog({
@@ -148,6 +154,7 @@ export function ManageProjectsDialog({
   onOpenChange,
   projects,
   onProjectsChange,
+  onCreateProject,
 }: ManageProjectsDialogProps) {
   const [editingProject, setEditingProject] = useState<Project | null>(null)
   const [editName, setEditName] = useState("")
@@ -209,26 +216,40 @@ export function ManageProjectsDialog({
 
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Manage Projects</DialogTitle>
-            <DialogDescription>
-              Rename or delete your projects.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-2 py-4">
-            {projects.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <FolderOpen className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>No projects yet</p>
-              </div>
-            ) : (
-              projects.map((project) => (
-                <div
-                  key={project.id}
-                  className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors"
+      <Drawer open={open} onOpenChange={onOpenChange}>
+        <DrawerContent className="h-[80vh]">
+          <div className="mx-auto w-full max-w-4xl overflow-y-auto p-6">
+            <DrawerHeader className="px-0">
+              <div className="flex items-center justify-between">
+                <DrawerTitle className="text-3xl">My Projects</DrawerTitle>
+                <Button
+                  onClick={() => {
+                    if (onCreateProject) {
+                      onCreateProject()
+                    }
+                  }}
+                  size="lg"
                 >
+                  <Plus className="h-5 w-5 mr-2" />
+                  New Project
+                </Button>
+              </div>
+            </DrawerHeader>
+
+            <div className="mt-6 space-y-6">
+              {/* Projects List */}
+              <div className="space-y-3">
+                {projects.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <FolderOpen className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                    <p className="text-xl">No projects yet</p>
+                  </div>
+                ) : (
+                  projects.map((project) => (
+                    <div
+                      key={project.id}
+                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                    >
                   {editingProject?.id === project.id ? (
                     <div className="flex-1 flex items-center gap-2">
                       <Input
@@ -263,18 +284,12 @@ export function ManageProjectsDialog({
                   ) : (
                     <>
                       <div className="flex-1">
-                        <h4 className="font-medium">{project.title || project.name}</h4>
-                        {project.created_at && (
-                          <p className="text-xs text-muted-foreground">
-                            Created{" "}
-                            {new Date(project.created_at).toLocaleDateString()}
-                          </p>
-                        )}
+                        <h4 className="text-2xl font-semibold">{project.title || project.name}</h4>
                       </div>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                            <MoreVertical className="h-4 w-4" />
+                          <Button variant="ghost" size="sm" className="h-10 w-10 p-0">
+                            <MoreVertical className="h-5 w-5" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
@@ -301,9 +316,11 @@ export function ManageProjectsDialog({
                 </div>
               ))
             )}
+              </div>
+            </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </DrawerContent>
+      </Drawer>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog

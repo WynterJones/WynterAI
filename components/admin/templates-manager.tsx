@@ -78,7 +78,8 @@ export function TemplatesManager({ initialTemplates }: TemplatesManagerProps) {
       }
 
       resetForm()
-      router.refresh()
+      // Force a full page refresh to show latest changes
+      window.location.reload()
     } catch (error) {
       console.error('Error saving template:', error)
       alert('Failed to save template')

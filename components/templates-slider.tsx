@@ -98,7 +98,7 @@ export function TemplatesSlider({
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="relative aspect-video bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-lg overflow-hidden animate-pulse"
+                  className="relative aspect-video bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-lg overflow-hidden animate-pulse border border-gray-300/60"
                 >
                   <div className="absolute inset-0 flex items-center justify-center">
                     <Sparkles className="h-8 w-8 text-gray-400 dark:text-gray-600 animate-pulse" />
@@ -128,7 +128,7 @@ export function TemplatesSlider({
                 <div
                   key={i}
                   className={cn(
-                    'relative aspect-video bg-gradient-to-br rounded-lg overflow-hidden cursor-pointer transition-all duration-300 ease-out hover:scale-105 hover:shadow-2xl',
+                    'relative aspect-video bg-gradient-to-br rounded-lg overflow-hidden cursor-pointer transition-all duration-300 ease-out hover:scale-105 hover:shadow-2xl border border-gray-300/60',
                     placeholder.color,
                   )}
                 >
@@ -196,7 +196,7 @@ export function TemplatesSlider({
                 <div
                   key={template.id}
                   className={cn(
-                    'relative aspect-video rounded-lg overflow-hidden transition-all duration-300 ease-out cursor-pointer hover:scale-105 hover:shadow-2xl',
+                    'relative aspect-video rounded-lg overflow-hidden transition-all duration-300 ease-out cursor-pointer hover:scale-105 hover:shadow-2xl border border-gray-300/60',
                     isCenter && 'md:scale-110 z-10',
                     isSelected && 'ring-4 ring-blue-500',
                   )}

@@ -15,14 +15,13 @@ import RenameChatDialog from './rename-chat-dialog'
 import { useSettings } from '../../lib/hooks/useSettings'
 import {
   ProjectDropdown,
-  ChatDropdown,
 } from '../projects/[projectId]/chats/[chatId]/components'
 import { TemplateDropdown } from '@/components/template-dropdown'
 import {
   CreateProjectDialog,
   ManageProjectsDialog,
 } from '@/components/project-management'
-import { Plus, Settings2 } from 'lucide-react'
+import { Folder } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -786,36 +785,16 @@ export default function PromptComponent({
                               projects={projects}
                               onProjectChange={onProjectChange}
                             />
-                            {/* Plus button to create new project */}
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0"
-                              onClick={() => setShowCreateProject(true)}
-                              title="Create New Project"
-                            >
-                              <Plus className="h-4 w-4" />
-                            </Button>
-                            {/* Menu button to manage projects */}
+                            {/* Folders button to manage projects */}
                             <Button
                               variant="ghost"
                               size="sm"
                               className="h-8 w-8 p-0"
                               onClick={() => setShowManageProjects(true)}
-                              title="Manage Projects"
+                              title="My Projects"
                             >
-                              <Settings2 className="h-4 w-4" />
+                              <Folder className="h-4 w-4" />
                             </Button>
-
-                            {/* Chat Dropdown - only show if project selected */}
-                            {currentProjectId && currentProjectId !== 'new' && (
-                              <ChatDropdown
-                                projectId={currentProjectId}
-                                currentChatId={currentChatId || 'new'}
-                                chats={projectChats}
-                                onChatChange={onChatChange}
-                              />
-                            )}
                           </>
                         ) : null}
                       </div>
@@ -1018,6 +997,10 @@ export default function PromptComponent({
         onProjectsChange={() => {
           // Reload projects list
           router.refresh()
+        }}
+        onCreateProject={() => {
+          setShowManageProjects(false)
+          setShowCreateProject(true)
         }}
       />
     </>

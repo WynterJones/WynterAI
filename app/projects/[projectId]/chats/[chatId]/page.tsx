@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ProjectDropdown, ChatDropdown } from './components'
@@ -14,6 +14,8 @@ import { useCanvasSettings } from '@/lib/hooks/useCanvasSettings'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { CreditsDropdown } from '@/components/credits-dropdown'
 import { UserMenuDropdown } from '@/components/user-menu-dropdown'
+import { ManageToolsDialog } from '@/components/tools-management'
+import { Button } from '@/components/ui/button'
 import Image from 'next/image'
 
 export default function ChatPage() {
@@ -37,6 +39,9 @@ export default function ChatPage() {
   }>({})
   const [showErrorDialog, setShowErrorDialog] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const [iframeHeight, setIframeHeight] = useState<number | null>(null)
+  const iframeRef = useRef<HTMLIFrameElement>(null)
+  const [showMyTools, setShowMyTools] = useState(false)
 
   // API validation on page load
   const { isValidating, showApiKeyError } = useApiValidation()
@@ -48,6 +53,24 @@ export default function ChatPage() {
   const [selectedChatId, setSelectedChatId] = useState(
     chatId === 'new-chat' ? 'new' : chatId,
   )
+
+  // Listen for iframe resize messages
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      // Accept messages from any origin for iframe resize
+      if (event.data?.type === 'iframe-resize' && typeof event.data.height === 'number') {
+        setIframeHeight(event.data.height)
+      }
+    }
+
+    window.addEventListener('message', handleMessage)
+    return () => window.removeEventListener('message', handleMessage)
+  }, [])
+
+  // Reset iframe height when generated app changes
+  useEffect(() => {
+    setIframeHeight(null)
+  }, [generatedApp])
 
   // Load existing chat data when component mounts (only if API is valid)
   useEffect(() => {
@@ -415,9 +438,13 @@ export default function ChatPage() {
       styles.width = `${canvasSettings.width}px`
     }
 
-    // Height
-    if (canvasSettings.height === 'auto') {
+    // Height - use dynamic height from iframe if available, otherwise use canvas settings
+    if (iframeHeight) {
+      styles.height = `${iframeHeight}px`
+      styles.minHeight = '400px'
+    } else if (canvasSettings.height === 'auto') {
       styles.height = 'auto'
+      styles.minHeight = '400px'
     } else {
       styles.height = `${canvasSettings.height}px`
     }
@@ -466,6 +493,13 @@ export default function ChatPage() {
 
           {user && (
             <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => setShowMyTools(true)}
+              >
+                My Created Tools
+              </Button>
               <CreditsDropdown />
               <UserMenuDropdown userEmail={user.email || ''} />
             </div>
@@ -496,12 +530,14 @@ export default function ChatPage() {
             {/* Preview container with canvas settings */}
             {generatedApp.startsWith('http') ? (
               <iframe
+                ref={iframeRef}
                 src={generatedApp}
                 style={getIframeStyles()}
                 sandbox="allow-scripts allow-same-origin allow-modals allow-forms allow-popups allow-top-navigation-by-user-activation allow-pointer-lock"
               />
             ) : (
               <iframe
+                ref={iframeRef}
                 srcDoc={generatedApp}
                 style={getIframeStyles()}
                 sandbox="allow-scripts allow-same-origin allow-modals allow-forms allow-pointer-lock"
@@ -542,6 +578,11 @@ export default function ChatPage() {
         isOpen={showErrorDialog}
         onClose={() => setShowErrorDialog(false)}
         message={errorMessage}
+      />
+
+      <ManageToolsDialog
+        open={showMyTools}
+        onOpenChange={setShowMyTools}
       />
     </div>
   )
