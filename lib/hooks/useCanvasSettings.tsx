@@ -18,7 +18,7 @@ interface CanvasSettingsContextType {
 }
 
 const defaultSettings: CanvasSettings = {
-  width: 'full',
+  width: 800,
   height: 600,
   borderRadius: 8,
   shadow: 'md',

@@ -9,6 +9,7 @@ import ErrorDialog from './components/error-dialog'
 import { TemplatesSlider } from '../components/templates-slider'
 import { CreditsDropdown } from '../components/credits-dropdown'
 import { UserMenuDropdown } from '../components/user-menu-dropdown'
+import { TemplatesLibrary } from '../components/templates-library'
 import { useApiValidation } from '../lib/hooks/useApiValidation'
 import { useAuth } from '../lib/hooks/useAuth'
 import { AuthDialog } from '../components/auth'
@@ -37,6 +38,7 @@ export default function HomePage() {
     'login',
   )
   const [showVideoDialog, setShowVideoDialog] = useState(false)
+  const [showTemplatesLibrary, setShowTemplatesLibrary] = useState(false)
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null)
 
   // API validation on page load
@@ -188,6 +190,7 @@ export default function HomePage() {
         // Check for API key error
         if (response.status === 401 && errorData.error === 'API_KEY_MISSING') {
           // API key error is now handled by useApiValidation hook
+          setIsLoading(false)
           return
         }
 
@@ -201,11 +204,13 @@ export default function HomePage() {
             remaining: errorData.remaining,
           })
           setShowRateLimitDialog(true)
+          setIsLoading(false)
           return
         }
 
         setErrorMessage(errorData.error || 'Failed to generate app')
         setShowErrorDialog(true)
+        setIsLoading(false)
         return
       }
 
@@ -216,7 +221,13 @@ export default function HomePage() {
         const newChatId = data.id || data.chatId
         const projectId = data.projectId || 'default' // Fallback project
         router.push(`/projects/${projectId}/chats/${newChatId}`)
+        // Keep loading state true during redirect
         return
+      } else {
+        // No chat ID returned
+        setErrorMessage('Failed to create chat. Please try again.')
+        setShowErrorDialog(true)
+        setIsLoading(false)
       }
     } catch (err) {
       setErrorMessage(
@@ -272,6 +283,26 @@ export default function HomePage() {
         </>
       )}
 
+      {/* Loading Overlay */}
+      {isLoading && (
+        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center z-50">
+          <div className="flex flex-col items-center gap-4">
+            <div className="relative w-16 h-16">
+              <div className="absolute inset-0 border-4 border-primary/30 rounded-full"></div>
+              <div className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            </div>
+            <div className="text-center">
+              <h3 className="text-lg font-semibold text-foreground">
+                Creating your tool...
+              </h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                This may take a few moments
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Homepage Content */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <div
@@ -290,6 +321,17 @@ export default function HomePage() {
             }}
             selectedTemplateId={selectedTemplate?.id}
           />
+
+          {/* Browse Library Button */}
+          <div className="text-center mt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowTemplatesLibrary(true)}
+            >
+              Browse Library
+            </Button>
+          </div>
 
           {/* Welcome Message */}
           <div className="text-center">
@@ -381,6 +423,20 @@ export default function HomePage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <TemplatesLibrary
+        open={showTemplatesLibrary}
+        onOpenChange={setShowTemplatesLibrary}
+        onSelectTemplate={(template) => {
+          setSelectedTemplate(template)
+          // If user is not authenticated, show auth dialog
+          if (!user) {
+            setAuthDialogMode('register')
+            setShowAuthDialog(true)
+          }
+        }}
+        selectedTemplateId={selectedTemplate?.id}
+      />
     </div>
   )
 }

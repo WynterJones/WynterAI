@@ -9,6 +9,11 @@ import RateLimitDialog from '../../../../components/rate-limit-dialog'
 import ErrorDialog from '../../../../components/error-dialog'
 import { CanvasToolbar } from '@/components/canvas/canvas-toolbar'
 import { useApiValidation } from '../../../../../lib/hooks/useApiValidation'
+import { useCanvasSettings } from '@/lib/hooks/useCanvasSettings'
+import { useAuth } from '@/lib/hooks/useAuth'
+import { CreditsDropdown } from '@/components/credits-dropdown'
+import { UserMenuDropdown } from '@/components/user-menu-dropdown'
+import Image from 'next/image'
 
 export default function ChatPage() {
   const params = useParams()
@@ -34,6 +39,8 @@ export default function ChatPage() {
 
   // API validation on page load
   const { isValidating, showApiKeyError } = useApiValidation()
+  const { settings: canvasSettings } = useCanvasSettings()
+  const { user } = useAuth()
 
   // Track if user has selected "new" options in dropdowns
   const [selectedProjectId, setSelectedProjectId] = useState(projectId)
@@ -396,10 +403,74 @@ export default function ChatPage() {
     return <ApiKeyError />
   }
 
+  // Calculate iframe styles based on canvas settings
+  const getIframeStyles = () => {
+    const styles: React.CSSProperties = {}
+
+    // Width
+    if (canvasSettings.width === 'full') {
+      styles.width = '100%'
+    } else {
+      styles.width = `${canvasSettings.width}px`
+    }
+
+    // Height
+    if (canvasSettings.height === 'auto') {
+      styles.height = 'auto'
+    } else {
+      styles.height = `${canvasSettings.height}px`
+    }
+
+    // Border radius
+    styles.borderRadius = `${canvasSettings.borderRadius}px`
+
+    // Border
+    if (canvasSettings.borderWidth > 0) {
+      styles.border = `${canvasSettings.borderWidth}px solid ${canvasSettings.borderColor}`
+    }
+
+    // Shadow
+    const shadowMap = {
+      none: 'none',
+      sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+      md: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+      lg: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+      xl: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+    }
+    styles.boxShadow = shadowMap[canvasSettings.shadow]
+
+    return styles
+  }
+
+  const hasToolbar = chatId !== 'new' && chatId !== 'new-chat' && chatData
+  const headerHeight = 64 // Header height
+  const toolbarHeight = hasToolbar ? 56 : 0 // Toolbar height when visible
+  const topOffset = headerHeight + toolbarHeight
+
   return (
     <div className="relative min-h-dvh bg-background flex flex-col">
+      {/* Header with Logo and User Menu */}
+      <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-16 items-center justify-between px-4">
+          <Image
+            src="/wynter-logo.png"
+            alt="Wynter.AI"
+            width={140}
+            height={35}
+            priority
+          />
+
+          {user && (
+            <div className="flex items-center gap-2">
+              <CreditsDropdown />
+              <UserMenuDropdown userEmail={user.email || ''} />
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Canvas Toolbar - Only show for active chats */}
-      {chatId !== 'new' && chatId !== 'new-chat' && chatData && (
+      {hasToolbar && (
         <CanvasToolbar
           chatId={chatId}
           projectId={projectId}
@@ -412,20 +483,23 @@ export default function ChatPage() {
       )}
 
       {/* Preview Area */}
-      <div className="absolute inset-0 overflow-hidden" style={{ top: chatId !== 'new' && chatId !== 'new-chat' && chatData ? '56px' : '0' }}>
+      <div
+        className="absolute inset-0 overflow-auto bg-gray-50 flex items-center justify-center"
+        style={{ top: `${topOffset}px`, bottom: '180px' }}
+      >
         {generatedApp ? (
-          <div className="w-full h-full bg-white">
-            {/* Preview container */}
+          <div className="p-8">
+            {/* Preview container with canvas settings */}
             {generatedApp.startsWith('http') ? (
               <iframe
                 src={generatedApp}
-                className="w-full h-full border-0"
+                style={getIframeStyles()}
                 sandbox="allow-scripts allow-same-origin allow-modals allow-forms allow-popups allow-top-navigation-by-user-activation allow-pointer-lock"
               />
             ) : (
               <iframe
                 srcDoc={generatedApp}
-                className="w-full h-full border-0"
+                style={getIframeStyles()}
                 sandbox="allow-scripts allow-same-origin allow-modals allow-forms allow-pointer-lock"
               />
             )}

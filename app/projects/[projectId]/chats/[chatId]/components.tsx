@@ -218,10 +218,6 @@ export function ChatDropdown({
         onChatChange('new')
       }
       return
-    } else if (chatId === 'new-from-latest') {
-      // Fork the latest chat
-      await handleForkLatestChat()
-      return
     } else if (chatId !== currentChatId) {
       // Navigate to existing chat
       router.push(`/projects/${projectId}/chats/${chatId}`)
@@ -230,43 +226,6 @@ export function ChatDropdown({
     // Notify parent of selection change for existing chats
     if (onChatChange) {
       onChatChange(chatId)
-    }
-  }
-
-  const handleForkLatestChat = async () => {
-    try {
-      // Find the latest chat (most recent updatedAt)
-      const sortedChats = [...chats].sort(
-        (a: any, b: any) =>
-          new Date(b.updatedAt || 0).getTime() -
-          new Date(a.updatedAt || 0).getTime(),
-      )
-
-      if (sortedChats.length === 0) {
-        return
-      }
-
-      const latestChat = sortedChats[0]
-
-      // Fork the chat using v0 SDK
-      const response = await fetch('/api/chats/fork', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          chatId: latestChat.id,
-          projectId: projectId,
-        }),
-      })
-
-      if (response.ok) {
-        const forkedChat = await response.json()
-        // Navigate to the new forked chat
-        router.push(`/projects/${projectId}/chats/${forkedChat.id}`)
-      }
-    } catch (error) {
-      // Silently handle fork errors
     }
   }
 
@@ -306,15 +265,6 @@ export function ChatDropdown({
             <span>+ New from Scratch</span>
             {currentChatId === 'new' && <CheckIcon className="h-4 w-4" />}
           </CommandItem>
-          {chats.length > 0 && (
-            <CommandItem
-              value="new-from-latest"
-              onSelect={() => handleChatSelect('new-from-latest')}
-              className="justify-between"
-            >
-              <span>+ New from Latest</span>
-            </CommandItem>
-          )}
           {chats.length > 0 && <CommandSeparator />}
           {chats.map((chat) => (
             <CommandItem

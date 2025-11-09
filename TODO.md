@@ -53,15 +53,41 @@
 
 - [x] Add headline and subheadline
 - [x] Keep existing prompt box
-- [ ] Create cycling slider of app template screenshots
-- [ ] Add "Use This Template" button to each template
-- [ ] Add "Browse Library" button
-- [ ] Highlight selected template in slider
-- [ ] Add selected template to prompt box
-- [ ] Use template ZIP URL as starting point for v0 chat with user's prompt
+- [x] Create cycling slider of app template screenshots
+- [x] Add "Use This Template" button to each template
+- [x] Add "Browse Library" button
+- [x] Highlight selected template in slider
+- [x] Add selected template to prompt box
+- [x] Use template ZIP URL as starting point for v0 chat with user's prompt
+
+## Project & Tools Management
+
+- [x] Create project dropdown with "Select Project" default
+- [x] Add plus button to create new projects
+- [x] Add settings icon to manage projects (rename/delete)
+- [x] Create project management API endpoints (PATCH/DELETE)
+- [x] Add wrench icon for tools/chat management
+- [x] Create tools management dialog (view all tools across projects)
+- [x] Create chat management API endpoints (PATCH/DELETE)
+- [x] Allow renaming and deleting tools/chats
+
+## User Experience
+
+- [x] Add credits dropdown in header (auto-loads v0 API balance)
+- [x] Add user menu dropdown (Logout, Help Center, Terms, Privacy)
+- [x] Add loading overlay for chat creation
+- [x] Remove "New from Latest" from chat dropdown
 
 ## Admin Area
 
 - [x] Add profiles with role "admin"
 - [x] Basic admin area at /hq with user stats and chats numbers, etc
 - [x] Manage templates that are available: name, screenshot, url for zip
+
+## Canvas (chat experience)
+
+- [x] Default to 800px width and 600px height
+- [x] Allow easy dimension toggle (fix)
+- [x] Make toolbar appear below main header (with logo, etc)
+- [x] Ensure corners, borders, etc works on iframe
+- [x] Toolbar should be centered nicely with dropdowns with presets and custom inputs for px etc

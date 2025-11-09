@@ -1,11 +1,11 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { DimensionControl } from "./dimension-control"
-import { StyleControls } from "./style-controls"
-import { PublishDrawer } from "./publish-drawer"
-import { Share2 } from "lucide-react"
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { DimensionControl } from './dimension-control'
+import { StyleControls } from './style-controls'
+import { PublishDrawer } from './publish-drawer'
+import { Share2 } from 'lucide-react'
 
 interface CanvasToolbarProps {
   chatId?: string
@@ -14,14 +14,19 @@ interface CanvasToolbarProps {
   onDeploySuccess?: (deployUrl: string) => void
 }
 
-export function CanvasToolbar({ chatId, projectId, deployUrl, onDeploySuccess }: CanvasToolbarProps) {
+export function CanvasToolbar({
+  chatId,
+  projectId,
+  deployUrl,
+  onDeploySuccess,
+}: CanvasToolbarProps) {
   const [publishDrawerOpen, setPublishDrawerOpen] = useState(false)
 
   return (
     <>
-      <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="backdrop-blur bg-white border-b shadow relative z-10">
         <div className="container flex h-14 items-center justify-between px-4">
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4 flex-1 justify-center">
             <DimensionControl />
             <div className="h-6 w-px bg-border" />
             <StyleControls />
@@ -31,6 +36,7 @@ export function CanvasToolbar({ chatId, projectId, deployUrl, onDeploySuccess }:
             onClick={() => setPublishDrawerOpen(true)}
             variant="default"
             size="sm"
+            className="ml-4"
           >
             <Share2 className="mr-2 h-4 w-4" />
             Add to Your Site
